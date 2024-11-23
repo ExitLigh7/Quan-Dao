@@ -1,0 +1,32 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center">About Quan Dao</h1>
+    <p class="mt-3 mx-auto" style="max-width: 800px; text-align: justify;">
+        Quan Dao is a place where martial arts meets personal growth. Our mission is to empower individuals 
+        through the practice of martial arts, focusing on both physical and mental development.
+    </p>
+    <p class="mx-auto" style="max-width: 800px; text-align: justify;">
+        Whether you're a beginner or an advanced practitioner, we offer classes tailored to your level. 
+        Join us and be part of a community that values discipline, respect, and lifelong learning.
+    </p>
+</div>
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">Our Instructors</h2>
+    
+    {% for instructor in instructors %}
+    <div class="row align-items-center mb-4">
+        <div class="col-md-4 {% if forloop.counter|divisibleby:2 %}order-md-2{% endif %}">
+            <img src="{% static instructor.image %}" alt="{{ instructor.name }}" class="img-fluid rounded">
+        </div>
+        <div class="col-md-8 {% if forloop.counter|divisibleby:2 %}order-md-1{% endif %}">
+            <h3>{{ instructor.name }}</h3>
+            <p>{{ instructor.description }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

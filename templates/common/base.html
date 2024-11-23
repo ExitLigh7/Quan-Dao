@@ -1,0 +1,72 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="Welcome to WearDo, your one-stop shop for the latest trendy clothes."
+          content="width=device-width, initial-scale=1.0">
+    <title>Quan Dao</title>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+
+</head>
+
+<body>
+<header>
+    {% include 'common/nav.html' %}
+</header>
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<div class="container">
+    <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+        <!-- Left Section: Address and Phone -->
+        <div class="col-md-4">
+            <p class="text-body-secondary mb-1">123 Martial Arts Lane, Karate City, QT 45678</p>
+            <p class="text-body-secondary">Phone: +1 (555) 123-4567</p>
+        </div>
+
+        <!-- Center Section: Company Name -->
+        <div class="col-md-4 text-center">
+            <span class="text-body-secondary">© 2024 Quan Dao, Inc</span>
+        </div>
+
+        <!-- Right Section: Social Media Links -->
+        <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
+            <li class="ms-3">
+                <a class="text-body-secondary" href="https://www.facebook.com/SoftwareUniversity"
+                   target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-facebook"></i>
+                </a>
+            </li>
+            <li class="ms-3">
+                <a class="text-body-secondary" href="https://www.instagram.com/softuni.bg/"
+                   target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-instagram"></i>
+                </a>
+            </li>
+            <li class="ms-3">
+                <a class="text-body-secondary" href="https://www.tiktok.com/@softwareuniversity"
+                   target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-tiktok"></i>
+                </a>
+            </li>
+        </ul>
+    </footer>
+</div>
+
+
+</body>
+</html>
