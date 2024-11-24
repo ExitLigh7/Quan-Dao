@@ -3,30 +3,63 @@
 
 {% block content %}
 <div class="container my-5">
-    <h1 class="text-center">About Quan Dao</h1>
-    <p class="mt-3 mx-auto" style="max-width: 800px; text-align: justify;">
-        Quan Dao is a place where martial arts meets personal growth. Our mission is to empower individuals 
-        through the practice of martial arts, focusing on both physical and mental development.
-    </p>
-    <p class="mx-auto" style="max-width: 800px; text-align: justify;">
-        Whether you're a beginner or an advanced practitioner, we offer classes tailored to your level. 
-        Join us and be part of a community that values discipline, respect, and lifelong learning.
-    </p>
-</div>
+    <!-- Main Title -->
+    <h1 class="text-center mb-4">About Quan Dao</h1>
 
-<div class="container my-5">
-    <h2 class="text-center mb-4">Our Instructors</h2>
-    
-    {% for instructor in instructors %}
-    <div class="row align-items-center mb-4">
-        <div class="col-md-4 {% if forloop.counter|divisibleby:2 %}order-md-2{% endif %}">
-            <img src="{% static instructor.image %}" alt="{{ instructor.name }}" class="img-fluid rounded">
-        </div>
-        <div class="col-md-8 {% if forloop.counter|divisibleby:2 %}order-md-1{% endif %}">
-            <h3>{{ instructor.name }}</h3>
-            <p>{{ instructor.description }}</p>
-        </div>
+    <div class="mx-auto" style="max-width: 900px;">
+        <p class="text-justify">
+            Quan Dao is a place where martial arts meets personal growth. Our mission is to empower individuals
+            through the practice of martial arts, focusing on both physical and mental development.
+        </p>
+        <p class="text-justify">
+            Whether you're a beginner or an advanced practitioner, we offer classes tailored to your level.
+            Join us and be part of a community that values discipline, respect, and lifelong learning.
+        </p>
     </div>
-    {% endfor %}
+
+    <h2 class="text-center mt-5">Our Instructors</h2>
+    <div class="row justify-content-center mt-4">
+        {% for instructor in instructors %}
+            <div class="col-md-6 col-lg-4 mb-4 d-flex justify-content-center">
+                <div class="card shadow" style="max-width: 800px;">
+                    <div class="card-body">
+                        <!-- Instructor Profile Picture (on first row) -->
+                        <div class="row mb-3">
+                            <div class="col-12 d-flex justify-content-center">
+                                {% if instructor.profile_picture %}
+                                    <img src="{{ instructor.profile_picture.url }}" 
+                                         class="img-fluid rounded-circle" 
+                                         alt="{{ instructor.first_name }} {{ instructor.last_name }}" 
+                                         style="object-fit: cover; width: 250px; height: 250px;">
+                                {% else %}
+                                    <img src="{% static 'images/default-profile.png' %}" 
+                                         class="img-fluid rounded-circle" 
+                                         alt="Default Profile Picture" 
+                                         style="object-fit: cover; width: 250px; height: 250px;">
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Instructor Name (on second row) -->
+                        <h5 class="card-title text-center">{{ instructor.first_name }} {{ instructor.last_name }}</h5>
+
+                        <!-- Bio Section with Scrollable Content (on third row) -->
+                        <div class="bio-container" style="max-height: 200px; overflow-y: auto;">
+                            <p class="card-text text-muted">{{ instructor.bio }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h2 class="text-center mt-5">General Information</h2>
+    <div class="mx-auto" style="max-width: 900px;">
+        <p class="text-justify">
+            At Quan Dao, training is conducted in a disciplined yet supportive environment. Our ranking system is
+            designed to help students progress through clearly defined milestones, ensuring both skill development
+            and personal growth.
+        </p>
+    </div>
 </div>
 {% endblock %}

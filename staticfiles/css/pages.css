@@ -37,3 +37,11 @@ footer ul {
     padding: 0; /* Remove padding */
     list-style: none; /* No bullet points */
 }
+
+
+/* Bio container */
+.bio-container {
+    max-height: 400px; /* Set a max height for the bio */
+    overflow-y: auto; /* Makes the bio scrollable if it exceeds the height */
+    padding-right: 10px; /* Optional, to give space for the scrollbar */
+}

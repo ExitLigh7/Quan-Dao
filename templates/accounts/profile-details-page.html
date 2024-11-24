@@ -1,0 +1,29 @@
+{% extends 'common/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="text-center">Profile</h1>
+    <div class="card mx-auto mt-4" style="max-width: 600px;">
+        <div class="card-body">
+            {% if profile.profile_picture %}
+                <div class="text-center mb-3">
+                    <img src="{{ profile.profile_picture.url }}" 
+                         alt="Profile Picture" 
+                         class="rounded-circle" 
+                         style="width: 150px; height: 150px; object-fit: cover;">
+                </div>
+            {% endif %}
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Username:</strong> {{ profile.user.username }}</li>
+                <li class="list-group-item"><strong>First Name:</strong> {{ profile.first_name }}</li>
+                <li class="list-group-item"><strong>Last Name:</strong> {{ profile.last_name }}</li>
+                <li class="list-group-item"><strong>Date of Birth:</strong> {{ profile.date_of_birth }}</li>
+                <li class="list-group-item"><strong>Bio:</strong> {{ profile.bio }}</li>
+            </ul>
+            <div class="text-center mt-4">
+                <a href="{% url 'profile-edit' pk=profile.pk %}" class="btn btn-primary">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

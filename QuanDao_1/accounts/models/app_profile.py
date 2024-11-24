@@ -21,13 +21,20 @@ class Profile(models.Model):
 
     first_name = models.CharField(
         max_length=30,
+        blank=True,
+        null=True
     )
 
     last_name = models.CharField(
         max_length=30,
+        blank=True,
+        null=True
     )
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True
+    )
 
     role = models.CharField(
         max_length=20,

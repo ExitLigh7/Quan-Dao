@@ -1,5 +1,6 @@
 from pathlib import Path
 from decouple import config
+from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,7 +21,8 @@ INSTALLED_APPS = [
     # My Apps:
     'QuanDao_1.accounts.apps.AccountsConfig',
     'QuanDao_1.academy.apps.AcademyConfig',
-    'QuanDao_1.common.apps.CommonConfig'
+    'QuanDao_1.common.apps.CommonConfig',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -115,3 +117,5 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.AppUser'
+LOGIN_REDIRECT_URL = reverse_lazy('home')
+LOGOUT_REDIRECT_URL = reverse_lazy('login')
