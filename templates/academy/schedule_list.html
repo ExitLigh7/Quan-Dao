@@ -1,0 +1,80 @@
+{% extends 'common/base.html' %}
+
+{% block content %}
+    <div class="container my-5">
+        <h1 class="text-center">My Schedules</h1>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <!-- Filters Section -->
+                <form method="get" class="row gy-2 gx-3 align-items-center">
+                    <div class="col-md-4">
+                        <label for="class-filter" class="form-label"><strong>Filter by Class</strong></label>
+                        <select id="class-filter" name="class" class="form-select">
+                            <option value="">All Classes</option>
+                            {% for martial_arts_class in classes %}
+                                <option value="{{ martial_arts_class.id }}"
+                                        {% if request.GET.class == martial_arts_class.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ martial_arts_class.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date-filter" class="form-label"><strong>Filter by Date</strong></label>
+                        <input type="date" id="date-filter" name="date" value="{{ request.GET.date }}"
+                               class="form-control">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Schedule List -->
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered table-striped">
+                <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if schedules %}
+                    {% for schedule in schedules %}
+                        <tr>
+                            <td>{{ schedule.martial_arts_class.name }}</td>
+                            <td>{{ schedule.date }}</td>
+                            <td>{{ schedule.start_time }}</td>
+                            <td>{{ schedule.end_time }}</td>
+                            <td>
+                                <a href="{% url 'schedule-edit' schedule.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="{% url 'schedule-delete' schedule.pk %}"
+                                   class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">No schedules found.</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+
+            {% if user.is_authenticated %}
+                {% if user.is_staff or user.profile.role == 'instructor' %}
+                    <div class="text-center mt-4">
+                        <a href="{% url 'schedule-create' %}" class="btn btn-success btn-lg">Add New Schedule</a>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}

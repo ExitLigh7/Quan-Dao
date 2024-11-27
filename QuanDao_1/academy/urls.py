@@ -1,7 +1,22 @@
-from django.urls import path
-
-from QuanDao_1.academy.views import AboutPage
+from django.urls import path, include
+from QuanDao_1.academy import views
 
 urlpatterns = [
-path('about/', AboutPage.as_view(), name='about'),
+    path('about/', views.AboutPage.as_view(), name='about'),
+    path('classes/', views.ClassesOverviewView.as_view(), name='classes-overview'),
+    path('classes/add/', views.ClassCreateView.as_view(), name='class-add'),
+    path('classes/<int:pk>/<slug:slug>/', include([
+        path('', views.ClassDetailView.as_view(), name='class-detail'),
+        path('edit/', views.ClassUpdateView.as_view(), name='class-edit'),
+        path('delete/', views.ClassDeleteView.as_view(), name='class-delete'),
+    ])
+        ),
+
+    path('schedules/', views.ScheduleListView.as_view(), name='schedule-list'),
+    path('schedules/new/', views.ScheduleCreateView.as_view(), name='schedule-create'),
+    path('schedules/<int:pk>/', include([
+        path('edit/', views.ScheduleUpdateView.as_view(), name='schedule-edit'),
+        path('delete/', views.ScheduleDeleteView.as_view(), name='schedule-delete'),
+    ])
+        ),
 ]

@@ -1,4 +1,5 @@
 {% load static %}
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-secondary" aria-label="Ninth navbar example">
     <div class="container-xl">
         <a class="navbar-brand" href="{% url 'home' %}">
@@ -13,25 +14,55 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% url 'home' as home_url %}
                 {% url 'about' as about_url %}
+                {% url 'classes-overview' as classes_overview_url %}
                 {% url 'login' as login_url %}
                 {% url 'register' as register_url %}
+                {% url 'schedule-list' as schedule_list_url %}
+                {% url 'schedule-create' as schedule_create_url %}
 
+                <!-- Home Link -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
+                    <a class="nav-link {% if request.path == home_url %}active{% endif %}"
+                       href="{{ home_url }}">Home</a>
                 </li>
 
+                <!-- About Us Link -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == about_url %}active{% endif %}" href="{{ about_url }}">About Us</a>
+                    <a class="nav-link {% if request.path == about_url %}active{% endif %}"
+                       href="{{ about_url }}">About Us</a>
                 </li>
+
+                <!-- Martial Arts Classes Link -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == classes_overview_url %}active{% endif %}"
+                       href="{{ classes_overview_url }}">Classes</a>
+                </li>
+
+                <!-- Schedule Management -->
+                {% if user.is_authenticated %}
+                    <!-- View Schedules -->
+                    {% if user.is_staff or user.profile.role == 'instructor' %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.path == schedule_list_url %}active{% endif %}"
+                               href="{{ schedule_list_url }}">Schedules</a>
+                        </li>
+                    {% endif %}
+                {% endif %}
 
                 {% if not request.user.is_authenticated %}
+                    <!-- Login Link -->
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == login_url %}active{% endif %}" href="{{ login_url }}">Log in</a>
+                        <a class="nav-link {% if request.path == login_url %}active{% endif %}"
+                           href="{{ login_url }}">Log in</a>
                     </li>
                 {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile-details' pk=request.user.profile.pk %}">Profile</a>
-                    </li>
+                    <!-- Profile Link -->
+                    {% if user.profile %}
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{% url 'profile-details' pk=request.user.profile.pk %}">Profile</a>
+                        </li>
+                    {% endif %}
 
                     <!-- Logout Link Styled as a Regular Nav Link -->
                     <li class="nav-item">
