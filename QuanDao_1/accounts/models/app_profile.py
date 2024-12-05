@@ -21,13 +21,20 @@ class Profile(models.Model):
 
     first_name = models.CharField(
         max_length=30,
+        blank=True,
+        null=True
     )
 
     last_name = models.CharField(
         max_length=30,
+        blank=True,
+        null=True
     )
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(
+        blank=True,
+        null=True
+    )
 
     role = models.CharField(
         max_length=20,
@@ -35,7 +42,7 @@ class Profile(models.Model):
         default=STUDENT
     )
 
-    bio = models.TextField(
+    biography = models.TextField(
         blank=True,
         null=True
     )
@@ -52,3 +59,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"

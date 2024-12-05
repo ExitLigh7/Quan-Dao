@@ -1,0 +1,47 @@
+.carousel-item img {
+    height: 700px;
+    object-fit: cover; /* Ensures the image fits without distortion */
+}
+
+.carousel-caption {
+    background: rgba(0, 0, 0, 0.5); /* Black background with 50% opacity */
+    color: white; /* White text for contrast */
+    padding: 10px; /* Add some padding for spacing */
+    border-radius: 5px; /* Round the corners */
+}
+
+.carousel-caption h5 {
+    font-size: 1.5rem; /* Adjust heading size */
+    font-weight: bold;
+}
+
+.carousel-caption p {
+    font-size: 1rem; /* Adjust paragraph size */
+    margin-top: 5px;
+}
+
+footer {
+    text-align: center; /* Default centering for all sections */
+}
+
+footer .col-md-4 {
+    text-align: left; /* Override for specific sections */
+}
+
+footer .text-center {
+    text-align: center !important; /* Explicit centering for company name */
+}
+
+footer ul {
+    margin: 0; /* Remove default margins from the social media list */
+    padding: 0; /* Remove padding */
+    list-style: none; /* No bullet points */
+}
+
+
+/* Bio container */
+.bio-container {
+    max-height: 400px; /* Set a max height for the bio */
+    overflow-y: auto; /* Makes the bio scrollable if it exceeds the height */
+    padding-right: 10px; /* Optional, to give space for the scrollbar */
+}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
 
 UserModel = get_user_model()
 
@@ -31,6 +32,17 @@ class MartialArtsClass(models.Model):
         blank=True,
         related_name='classes',
     )
+
+    slug = models.SlugField(
+        unique=True,
+        max_length=100,
+        blank=True
+    )
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -78,23 +90,30 @@ class Enrollment(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='enrollments')
+        related_name='enrollments'
+    )
 
     enrollment_date = models.DateTimeField(
         auto_now_add=True,
     )
 
     class Meta:
-        unique_together = ('user', 'martial_arts_class')
+        unique_together = ('user', 'martial_arts_class', 'schedule')  # Include schedule in unique_together
 
     def __str__(self):
-        return f"{self.user.username} - {self.martial_arts_class.name}"
+        return f"{self.user.username} - {self.martial_arts_class.name} ({self.schedule})"
 
 class Feedback(models.Model):
     class_instance = models.ForeignKey(
         MartialArtsClass,
         on_delete=models.CASCADE,
         related_name='feedbacks',
+    )
+
+    schedule = models.ForeignKey(
+        Schedule,
+        on_delete=models.CASCADE,
+        related_name='feedbacks',  # allows reverse relation for schedules
     )
 
     user = models.ForeignKey(
@@ -104,8 +123,7 @@ class Feedback(models.Model):
     )
 
     rating = models.PositiveIntegerField(
-        choices=[
-            (i, str(i)) for i in range(1, 6)],
+        choices=[(i, str(i)) for i in range(1, 6)],
     )
 
     comment = models.TextField(
@@ -118,8 +136,9 @@ class Feedback(models.Model):
     )
 
     def __str__(self):
-        return f"Feedback from {self.user.username} for {self.class_instance.name}"
+        return f"Feedback from {self.user.username} for {self.class_instance.name} on {self.schedule.date}"
 
     class Meta:
-        unique_together = ['user', 'class_instance']
+        unique_together = ['user', 'schedule']  # Ensures one feedback per user per schedule
         ordering = ['-created_on']
+

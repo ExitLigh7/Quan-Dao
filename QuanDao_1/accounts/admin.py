@@ -1,10 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
-# Get the user model dynamically (this is useful if you're using a custom user model)
 UserModel = get_user_model()
 
-@admin.register(UserModel)  # This registers the admin for the UserModel
+@admin.register(UserModel)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('username', 'email', 'is_staff', 'is_active')
     list_filter = ('is_staff', 'is_active')
