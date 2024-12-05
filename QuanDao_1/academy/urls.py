@@ -9,6 +9,8 @@ urlpatterns = [
         path('', views.ClassDetailView.as_view(), name='class-detail'),
         path('edit/', views.ClassUpdateView.as_view(), name='class-edit'),
         path('delete/', views.ClassDeleteView.as_view(), name='class-delete'),
+        path('enroll/', views.enroll_in_class, name='class-enroll'),
+        path('feedback/', views.submit_feedback, name='class-feedback'),
     ])
         ),
 

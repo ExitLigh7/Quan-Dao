@@ -42,7 +42,7 @@ class Profile(models.Model):
         default=STUDENT
     )
 
-    bio = models.TextField(
+    biography = models.TextField(
         blank=True,
         null=True
     )
@@ -59,3 +59,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"

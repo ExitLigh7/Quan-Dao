@@ -26,21 +26,24 @@ class ScheduleListView(LoginRequiredMixin, IsInstructorMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['classes'] = MartialArtsClass.objects.all()
+        context['classes'] = MartialArtsClass.objects.filter(instructor=self.request.user)
         return context
 
 
 class ScheduleCreateView(LoginRequiredMixin, IsInstructorMixin, CreateView):
-    """
-    Allows instructors to create new schedules.
-    """
+
     model = Schedule
     form_class = ScheduleCreateForm
     template_name = 'academy/schedule_form.html'
     success_url = reverse_lazy('schedule-list')
 
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        form.fields['martial_arts_class'].queryset = MartialArtsClass.objects.filter(instructor=self.request.user)
+        return form
+
     def form_valid(self, form):
-        form.instance.instructor = self.request.user  # Automatically assign the instructor
+        form.instance.instructor = self.request.user
         messages.success(self.request, "Schedule created successfully!")
         return super().form_valid(form)
 

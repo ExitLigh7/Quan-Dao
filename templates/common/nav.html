@@ -75,9 +75,19 @@
                     </li>
                 {% endif %}
             </ul>
-            <form role="search">
-                <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-            </form>
+
+            <div class="d-flex align-items-center">
+                <!-- Search Form -->
+                <form role="search" class="me-3">
+                    <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                </form>
+                <!-- Greeting for Logged-in Users -->
+                {% if user.is_authenticated %}
+                    <span class="text-white">
+                        Welcome, <span class="fw-bold">{{ user.profile.first_name|default:user.username }}</span>
+                    </span>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>

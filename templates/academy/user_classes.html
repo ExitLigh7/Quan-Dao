@@ -1,0 +1,54 @@
+{% extends 'common/base.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h1>My Classes</h1>
+    <hr>
+
+    <!-- Upcoming Classes Section -->
+    <h2>Upcoming Classes</h2>
+    {% if upcoming_classes %}
+        <div class="list-group">
+            {% for enrollment in upcoming_classes %}
+                <div class="list-group-item">
+                    <h5 class="mb-1">{{ enrollment.schedule.martial_arts_class.name }}</h5>
+                    <p class="mb-1">
+                        <strong>Date:</strong> {{ enrollment.schedule.date }} <br>
+                        <strong>Time:</strong> {{ enrollment.schedule.start_time }} - {{ enrollment.schedule.end_time }} <br>
+                        <strong>Instructor:</strong> {{ enrollment.schedule.martial_arts_class.instructor.profile.get_full_name }}
+                    </p>
+                    <!-- Cancel Enrollment Form -->
+                    <form method="post" action="{% url 'my-classes' %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="enrollment_id" value="{{ enrollment.pk }}">
+                        <button type="submit" class="btn btn-danger">Cancel Enrollment</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">You have no upcoming classes.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Past Classes Section -->
+    <h2>Past Classes</h2>
+    {% if past_classes %}
+        <div class="list-group">
+            {% for enrollment in past_classes %}
+                <a href="{% url 'class-detail' enrollment.schedule.martial_arts_class.pk enrollment.schedule.martial_arts_class.slug %}" class="list-group-item list-group-item-action">
+                    <h5 class="mb-1">{{ enrollment.schedule.martial_arts_class.name }}</h5>
+                    <p class="mb-1">
+                        <strong>Date:</strong> {{ enrollment.schedule.date }} <br>
+                        <strong>Time:</strong> {{ enrollment.schedule.start_time }} - {{ enrollment.schedule.end_time }} <br>
+                        <strong>Instructor:</strong> {{ enrollment.schedule.martial_arts_class.instructor.profile.get_full_name }}
+                    </p>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">You have no past classes.</p>
+    {% endif %}
+</div>
+{% endblock %}

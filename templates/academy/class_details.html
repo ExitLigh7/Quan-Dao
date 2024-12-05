@@ -1,0 +1,121 @@
+`{% extends 'common/base.html' %}
+{% block content %}
+    <div class="container my-5">
+        <!-- Class Detail Card -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="card-title">{{ class.name }}</h1>
+                <p><strong>Instructor:</strong> {{ class.instructor.profile.get_full_name }}</p>
+                <p><strong>Level:</strong> {{ class.level }}</p>
+                <p><strong>Description:</strong></p>
+                <div class="p-3 bg-light border rounded">
+                    {{ class.description }}
+                </div>
+
+                <!-- Enrollment Section -->
+                {% if user.is_authenticated %}
+                    <hr>
+                    <h3>Enroll in Class</h3>
+                    {% if enrolled_schedules|length == schedules|length %}
+                        <div class="alert alert-info">
+                            You are enrolled in all available schedules for this class.
+                        </div>
+                    {% else %}
+                        <form method="post" action="{% url 'class-enroll' class.pk class.slug %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="schedule" class="form-label"><strong>Select Schedule:</strong></label>
+                                <select name="schedule" id="schedule" class="form-select">
+                                    {% for schedule in schedules %}
+                                        <option value="{{ schedule.id }}"
+                                                {% if schedule.enrolled_count >= class.max_capacity or schedule.id in enrolled_schedules %}disabled{% endif %}>
+                                            {{ schedule.date }} - {{ schedule.start_time }} - {{ schedule.end_time }}
+                                            ({{ schedule.enrolled_count }}/{{ class.max_capacity }})
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success"
+                                    {% if all_schedules_full %}disabled{% endif %}>
+                                Enroll
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        Please <a href="{% url 'login' %}?next={{ request.path }}">log in</a> to enroll in this class.
+                    </div>
+                {% endif %}
+
+                <!-- Feedback Section -->
+                <!-- Feedback Section -->
+                {% if user.is_authenticated %}
+                    <hr>
+                    <h3>Submit Feedback</h3>
+                    {% if schedules_for_feedback_ids %}
+                        <form method="post" action="{% url 'class-feedback' class.pk class.slug %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="schedule" class="form-label"><strong>Select Schedule:</strong></label>
+                                <select name="schedule" id="schedule" class="form-select">
+                                    {% for schedule in schedules %}
+                                        <option value="{{ schedule.id }}"
+                                                {% if schedule.id not in schedules_for_feedback_ids %}
+                                                disabled
+                                                {% endif %}>
+                                            {{ schedule.date }} - {{ schedule.start_time }} - {{ schedule.end_time }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="rating" class="form-label"><strong>Rating:</strong></label>
+                                <select name="rating" id="rating" class="form-select">
+                                    {% for i in "12345" %}
+                                        <option value="{{ i }}">{{ i }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="comment" class="form-label"><strong>Comment:</strong></label>
+                                <textarea name="comment" id="comment" class="form-control"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-warning mt-3">
+                            {% if all_schedules_future %}
+                                <!-- Future schedules -->
+                                You can leave feedback after the class has been conducted.
+                            {% elif enrolled_schedules %}
+                                <!-- Already reviewed -->
+                                You have already provided feedback for all completed schedules you are enrolled in.
+                            {% else %}
+                                <!-- Not enrolled -->
+                                You can only provide feedback for schedules you are enrolled in.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                <hr>
+                <h3>Feedback</h3>
+                {% if feedbacks %}
+                    {% for feedback in feedbacks %}
+                        <div class="card my-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ feedback.user.username }} - {{ feedback.rating }}/5</h5>
+                                <p><strong>Schedule:</strong> {{ feedback.schedule.date }}
+                                    - {{ feedback.schedule.start_time }} - {{ feedback.schedule.end_time }}</p>
+                                <p>{{ feedback.comment }}</p>
+                                <small>Submitted on {{ feedback.created_on }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No feedback has been submitted yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
