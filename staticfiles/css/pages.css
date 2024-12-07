@@ -45,3 +45,28 @@ footer ul {
     overflow-y: auto; /* Makes the bio scrollable if it exceeds the height */
     padding-right: 10px; /* Optional, to give space for the scrollbar */
 }
+
+/* Spinner */
+#loading-spinner {
+    height: 20px;
+    width: 20px;
+}
+
+/* Truncate long text in the dropdown */
+.dropdown-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-menu {
+    max-height: 300px; /* Adjust height for scrolling */
+    overflow-y: auto;
+}
+
+/* Add hover effect */
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #000;
+}

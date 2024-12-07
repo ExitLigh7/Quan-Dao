@@ -51,11 +51,6 @@
                                 {{ class.description|truncatechars:30 }}
                             </p>
 
-{#                            <!-- Total Enrollment -->#}
-{#                            <p class="text-center text-muted mb-3">#}
-{#                                <strong>Total Enrolled:</strong> {{ class.total_enrolled|default:0 }}#}
-{#                            </p>#}
-
                             <!-- Schedule Information -->
                             <ul class="list-group list-group-flush">
                                 {% for schedule in class.schedules_list %}
@@ -75,6 +70,12 @@
                                    class="btn btn-primary btn-sm">
                                     View Details
                                 </a>
+                                {% if request.user.is_staff or class.instructor == request.user %}
+                                    <a href="{% url 'class-edit' class.pk class.slug %}"
+                                       class="btn btn-warning btn-sm">
+                                        Edit
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

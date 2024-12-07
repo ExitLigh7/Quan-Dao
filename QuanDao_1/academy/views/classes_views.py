@@ -76,6 +76,12 @@ class ClassDetailView(generic.DetailView):
         context['feedbacks'] = Feedback.objects.filter(class_instance=self.object)
 
         if user.is_authenticated:
+            # Check if the user has completed their profile
+            if not user.profile.is_complete():  # Assuming `is_complete` is a method in the Profile model
+                context['profile_incomplete'] = True
+            else:
+                context['profile_incomplete'] = False
+
             # User's enrolled schedules
             enrolled_schedules = Enrollment.objects.filter(
                 user=user,
@@ -160,6 +166,12 @@ class ClassDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteVie
 def enroll_in_class(request, pk, slug):
     martial_arts_class = get_object_or_404(MartialArtsClass, pk=pk, slug=slug)
     schedule_id = request.POST.get('schedule')
+
+    # Check if the user's profile is complete
+    if not request.user.profile.is_complete():
+        messages.warning(request, "Please complete your profile before enrolling in a class.")
+        # Redirect to profile-edit and pass the user's pk
+        return redirect('profile-edit', pk=request.user.profile.pk)  # Include user pk here
 
     # If cancel button is pressed, cancel enrollment
     if 'cancel_enrollment' in request.POST:

@@ -8,6 +8,8 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(user=instance, role='admin' if instance.is_superuser else 'student')
     else:
-        instance.profile.save()
+        if instance.is_superuser:
+            instance.profile.role = 'admin'
+            instance.profile.save()

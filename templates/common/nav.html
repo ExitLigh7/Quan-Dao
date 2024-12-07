@@ -1,70 +1,53 @@
 {% load static %}
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-secondary" aria-label="Ninth navbar example">
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary" aria-label="Navbar">
     <div class="container-xl">
+        <!-- Logo -->
         <a class="navbar-brand" href="{% url 'home' %}">
             <img src="{% static 'images/quan_dao_logo.jpg' %}" alt="Store Logo" width="100" height="60">
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample07XL"
-                aria-controls="navbarsExample07XL" aria-expanded="false" aria-label="Toggle navigation">
+
+        <!-- Mobile Menu Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarsExample07XL">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Links -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% url 'home' as home_url %}
                 {% url 'about' as about_url %}
                 {% url 'classes-overview' as classes_overview_url %}
                 {% url 'login' as login_url %}
                 {% url 'register' as register_url %}
-                {% url 'schedule-list' as schedule_list_url %}
-                {% url 'schedule-create' as schedule_create_url %}
 
-                <!-- Home Link -->
                 <li class="nav-item">
-                    <a class="nav-link {% if request.path == home_url %}active{% endif %}"
-                       href="{{ home_url }}">Home</a>
+                    <a class="nav-link {% if request.path == home_url %}active{% endif %}" href="{{ home_url }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == about_url %}active{% endif %}" href="{{ about_url }}">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == classes_overview_url %}active{% endif %}" href="{{ classes_overview_url }}">Classes</a>
                 </li>
 
-                <!-- About Us Link -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == about_url %}active{% endif %}"
-                       href="{{ about_url }}">About Us</a>
-                </li>
-
-                <!-- Martial Arts Classes Link -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.path == classes_overview_url %}active{% endif %}"
-                       href="{{ classes_overview_url }}">Classes</a>
-                </li>
-
-                <!-- Schedule Management -->
-                {% if user.is_authenticated %}
-                    <!-- View Schedules -->
-                    {% if user.is_staff or user.profile.role == 'instructor' %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.path == schedule_list_url %}active{% endif %}"
-                               href="{{ schedule_list_url }}">Schedules</a>
-                        </li>
-                    {% endif %}
+                {% if user.is_authenticated and user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/qd_admin/">Administration</a>
+                    </li>
                 {% endif %}
 
                 {% if not request.user.is_authenticated %}
-                    <!-- Login Link -->
                     <li class="nav-item">
-                        <a class="nav-link {% if request.path == login_url %}active{% endif %}"
-                           href="{{ login_url }}">Log in</a>
+                        <a class="nav-link {% if request.path == login_url %}active{% endif %}" href="{{ login_url }}">Log in</a>
                     </li>
                 {% else %}
-                    <!-- Profile Link -->
                     {% if user.profile %}
                         <li class="nav-item">
-                            <a class="nav-link"
-                               href="{% url 'profile-details' pk=request.user.profile.pk %}">Profile</a>
+                            <a class="nav-link" href="{% url 'profile-details' pk=request.user.profile.pk %}">Profile</a>
                         </li>
                     {% endif %}
-
-                    <!-- Logout Link Styled as a Regular Nav Link -->
                     <li class="nav-item">
                         <form method="post" action="{% url 'logout' %}" class="d-inline">
                             {% csrf_token %}
@@ -76,18 +59,70 @@
                 {% endif %}
             </ul>
 
-            <div class="d-flex align-items-center">
-                <!-- Search Form -->
-                <form role="search" class="me-3">
-                    <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                </form>
-                <!-- Greeting for Logged-in Users -->
-                {% if user.is_authenticated %}
-                    <span class="text-white">
-                        Welcome, <span class="fw-bold">{{ user.profile.first_name|default:user.username }}</span>
-                    </span>
-                {% endif %}
+            <!-- Search Bar -->
+            <div class="position-relative" style="width: 300px;">
+                <input id="search-input" class="form-control" type="search" placeholder="Search classes..." aria-label="Search">
+                <ul id="search-results" class="dropdown-menu shadow-lg" 
+                    style="display: none; position: absolute; top: 100%; left: 0; width: 100%; max-height: 300px; overflow-y: auto; z-index: 1050;"></ul>
             </div>
+
+            {% if user.is_authenticated %}
+                <span class="text-white ms-3">
+                    Welcome, <span class="fw-bold">{{ user.profile.first_name|default:user.username }}</span>
+                </span>
+            {% endif %}
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', function () {
+            const query = this.value.trim();
+
+            if (query.length < 2) {
+                searchResults.style.display = 'none';
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            fetch(`/search/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    searchResults.innerHTML = ''; // Clear previous results
+
+                    if (data.results.length > 0) {
+                        searchResults.style.display = 'block'; // Show dropdown
+                        data.results.forEach((result) => {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add('dropdown-item');
+                            listItem.style.cursor = 'pointer';
+                            listItem.innerHTML = `<a href="/class/${result.id}/" class="d-block text-truncate">${highlightQuery(result.name, query)}</a>`;
+                            searchResults.appendChild(listItem);
+                        });
+                    } else {
+                        searchResults.style.display = 'block';
+                        searchResults.innerHTML = '<li class="dropdown-item text-muted">No results found</li>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching search results:', error);
+                });
+        });
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!searchResults.contains(event.target) && event.target !== searchInput) {
+                searchResults.style.display = 'none';
+            }
+        });
+        
+        function highlightQuery(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="text-primary fw-bold">$1</span>');
+        }
+    });
+</script>
