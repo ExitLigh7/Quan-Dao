@@ -86,9 +86,11 @@
         </ul>
     </div>
     
-    <div class="text-center mt-5">
-    <a href="#" class="btn btn-primary btn-lg">
-        Get Started Today!
-    </a>
-</div>
+    {% if not user.is_authenticated %}
+        <div class="text-center mt-5">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                Get Started Today!
+            </a>
+        </div>
+    {% endif %}
 {% endblock %}

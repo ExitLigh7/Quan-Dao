@@ -7,3 +7,4 @@ class AccountsConfig(AppConfig):
 
     def ready(self):
         import QuanDao_1.accounts.signals
+        import QuanDao_1.academy.signals

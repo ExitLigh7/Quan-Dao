@@ -20,8 +20,9 @@ class ProfileEditForm(forms.ModelForm):
         model = Profile
         exclude = ('user', 'role')
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4}),  # Optional: Customizes the widget
+            'biograpy': forms.Textarea(attrs={'rows': 4}),  # Optional: Customizes the widget
         }
         help_texts = {
-            'bio': 'The field is optional.',
+            'biography': 'The field is optional.',
+            'profile_picture': 'The field is optional.',
         }
