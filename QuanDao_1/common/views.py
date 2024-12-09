@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views import generic
 from QuanDao_1.academy.models import MartialArtsClass
 
@@ -14,4 +15,6 @@ def search(request):
         results = MartialArtsClass.objects.filter(name__icontains=query).values('id', 'name', 'description')
 
     return JsonResponse({'query': query, 'results': list(results)})
+
+
 

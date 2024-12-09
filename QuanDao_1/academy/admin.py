@@ -11,6 +11,28 @@ class MartialArtsClassAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('name', 'level')
 
+    # Limit the queryset based on the logged-in user
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_staff:
+            # Staff can see all classes
+            return qs
+        else:
+            # Instructors only see their own classes
+            return qs.filter(instructor=request.user)
+
+    # Optionally restrict the actions available to instructors (if needed)
+    def has_change_permission(self, request, obj=None):
+        if obj is not None:
+            return obj.instructor == request.user
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None:
+            return obj.instructor == request.user
+        return super().has_delete_permission(request, obj)
+
+
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
@@ -18,6 +40,25 @@ class ScheduleAdmin(admin.ModelAdmin):
     list_filter = ('date', 'martial_arts_class', 'instructor')
     search_fields = ('martial_arts_class__name', 'instructor__username')
     ordering = ('date', 'start_time')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_staff:
+            return qs
+        else:
+            # Instructors only see schedules for their own classes
+            return qs.filter(martial_arts_class__instructor=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        if obj is not None:
+            return obj.martial_arts_class.instructor == request.user
+        return super().has_change_permission(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is not None:
+            return obj.martial_arts_class.instructor == request.user
+        return super().has_delete_permission(request, obj)
+
 
 
 @admin.register(Enrollment)

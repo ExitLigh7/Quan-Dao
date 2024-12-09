@@ -2,11 +2,13 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
 from django.db.models import Count, Sum, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.timezone import make_aware, now
 from django.views import generic
 from django.views.decorators.http import require_POST
 from QuanDao_1.academy.models import MartialArtsClass, Enrollment, Schedule, Feedback
@@ -20,6 +22,7 @@ class AboutPage(generic.TemplateView):
         context = super().get_context_data(**kwargs)
         context['instructors'] = Profile.objects.filter(role=Profile.INSTRUCTOR)
         return context
+
 
 class ClassesOverviewView(generic.ListView):
     model = MartialArtsClass
@@ -53,7 +56,6 @@ class ClassesOverviewView(generic.ListView):
 
         return context
 
-from django.utils.timezone import now
 
 class ClassDetailView(generic.DetailView):
     model = MartialArtsClass
@@ -76,8 +78,7 @@ class ClassDetailView(generic.DetailView):
         context['feedbacks'] = Feedback.objects.filter(class_instance=self.object)
 
         if user.is_authenticated:
-            # Check if the user has completed their profile
-            if not user.profile.is_complete():  # Assuming `is_complete` is a method in the Profile model
+            if not user.profile.is_complete():
                 context['profile_incomplete'] = True
             else:
                 context['profile_incomplete'] = False
@@ -105,7 +106,6 @@ class ClassDetailView(generic.DetailView):
             )
             context['schedules_for_feedback_ids'] = schedules_for_feedback.values_list('id', flat=True)
 
-        # Check if all schedules are in the future
         future_schedules = schedules.filter(
             Q(date__gt=now().date()) |
             Q(date=now().date(), start_time__gt=now().time())
@@ -120,6 +120,7 @@ class ClassDetailView(generic.DetailView):
         context['schedules'] = schedules
         return context
 
+
 class ClassCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = MartialArtsClass
     template_name = 'academy/class_form.html'
@@ -127,7 +128,8 @@ class ClassCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
 
     def test_func(self):
         # Allow only staff or instructors to create classes
-        return self.request.user.is_staff or (hasattr(self.request.user, 'profile') and self.request.user.profile.role == 'instructor')
+        return self.request.user.is_staff or (
+                    hasattr(self.request.user, 'profile') and self.request.user.profile.role == 'instructor')
 
     def form_valid(self, form):
         # Automatically set the instructor to the current user
@@ -144,44 +146,51 @@ class ClassUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
     fields = ['name', 'description', 'level', 'max_capacity']
 
     def test_func(self):
-        # Allow only staff or the class instructor to edit
         martial_arts_class = self.get_object()
-        return self.request.user.is_staff or martial_arts_class.instructor == self.request.user
+        return martial_arts_class.instructor == self.request.user
+
+    def handle_no_permission(self):
+        messages.error(self.request, "You do not have permission to edit this class.")
+        raise PermissionDenied("You are not allowed to edit this class.")
 
     def get_success_url(self):
+        messages.success(self.request, "Class updated successfully.")
         return reverse_lazy('classes-overview')
+
 
 class ClassDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
     model = MartialArtsClass
     template_name = 'academy/class_confirm_delete.html'
+    context_object_name = 'class'
 
     def test_func(self):
+        """Only allow the instructor or staff to delete the class"""
         martial_arts_class = self.get_object()
-        return self.request.user.is_staff or martial_arts_class.instructor == self.request.user
+        return martial_arts_class.instructor == self.request.user
 
     def get_success_url(self):
+        messages.success(self.request, "Class successfully deleted.")
         return reverse_lazy('classes-overview')
+
+
 
 @login_required
 def enroll_in_class(request, pk, slug):
     martial_arts_class = get_object_or_404(MartialArtsClass, pk=pk, slug=slug)
     schedule_id = request.POST.get('schedule')
 
-    # Check if the user's profile is complete
     if not request.user.profile.is_complete():
         messages.warning(request, "Please complete your profile before enrolling in a class.")
-        # Redirect to profile-edit and pass the user's pk
-        return redirect('profile-edit', pk=request.user.profile.pk)  # Include user pk here
+        return redirect('profile-edit', pk=request.user.profile.pk)
 
-    # If cancel button is pressed, cancel enrollment
+    # Cancel enrollment logic
     if 'cancel_enrollment' in request.POST:
-        schedule_id = request.POST.get('schedule_id')  # Get the schedule to cancel
+        schedule_id = request.POST.get('schedule_id')
         if schedule_id:
             schedule = get_object_or_404(Schedule, pk=schedule_id, martial_arts_class=martial_arts_class)
-            # Check if the user is enrolled in the class
             enrollment = Enrollment.objects.filter(user=request.user, schedule=schedule).first()
             if enrollment:
-                enrollment.delete()  # Remove the enrollment
+                enrollment.delete()
                 messages.success(request, f"You have successfully canceled your enrollment for {schedule.date}.")
             else:
                 messages.error(request, "You are not enrolled in this class.")
@@ -189,7 +198,6 @@ def enroll_in_class(request, pk, slug):
             messages.error(request, "Invalid schedule to cancel.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # If enrolling in a class
     if not schedule_id:
         messages.error(request, "Please select a schedule to enroll.")
         return redirect('class-detail', pk=pk, slug=slug)
@@ -200,17 +208,22 @@ def enroll_in_class(request, pk, slug):
         messages.error(request, "Invalid schedule selected.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Check if the user is already enrolled in the same schedule
+    # Restrict enrollment for past schedules
+    schedule_datetime_naive = datetime.combine(schedule.date, schedule.start_time)
+    schedule_datetime = make_aware(schedule_datetime_naive)
+    if schedule_datetime < now():
+        messages.error(request,
+                       f"Cannot enroll in past classes. The selected schedule ({schedule.date}) has already occurred.")
+        return redirect('class-detail', pk=pk, slug=slug)
+
     if Enrollment.objects.filter(user=request.user, schedule=schedule).exists():
         messages.info(request, f"You are already enrolled in the schedule for {schedule.date}.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Check if the schedule is full
     if schedule.enrollments.count() >= martial_arts_class.max_capacity:
         messages.error(request, f"The schedule for {schedule.date} is fully booked.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Create the enrollment
     try:
         Enrollment.objects.create(
             user=request.user,
@@ -223,44 +236,39 @@ def enroll_in_class(request, pk, slug):
 
     return redirect('class-detail', pk=pk, slug=slug)
 
+
 @require_POST
 @login_required
 def submit_feedback(request, pk, slug):
     martial_arts_class = get_object_or_404(MartialArtsClass, pk=pk, slug=slug)
 
-    # Get schedules the user is enrolled in
     enrolled_schedules = Schedule.objects.filter(
         martial_arts_class=martial_arts_class,
         enrollments__user=request.user
     ).distinct()
 
-    # Exclude schedules where feedback has already been provided
     feedback_schedules = Feedback.objects.filter(user=request.user).values_list('schedule_id', flat=True)
     schedules_for_feedback = enrolled_schedules.exclude(id__in=feedback_schedules)
 
-    # Get POST data
     schedule_id = request.POST.get('schedule')
     rating = request.POST.get('rating')
     comment = request.POST.get('comment', '').strip()
 
-    # Validate schedule selection
     try:
         schedule = schedules_for_feedback.get(pk=schedule_id)
     except Schedule.DoesNotExist:
-        messages.error(request, "You have either already reviewed this schedule or it's no longer available for feedback.")
+        messages.error(request,
+                       "You have either already reviewed this schedule or it's no longer available for feedback.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Validate rating
     if not rating or not rating.isdigit() or int(rating) not in range(1, 6):
         messages.error(request, "Please provide a valid rating (1-5).")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Check if feedback is already given
     if Feedback.objects.filter(user=request.user, schedule=schedule).exists():
         messages.error(request, "You have already provided feedback for this schedule.")
         return redirect('class-detail', pk=pk, slug=slug)
 
-    # Ensure feedback is only allowed after schedule end time
     now = timezone.now()
     schedule_end = timezone.make_aware(datetime.combine(schedule.date, schedule.end_time))
     if now < schedule_end:
@@ -279,14 +287,13 @@ def submit_feedback(request, pk, slug):
     messages.success(request, "Thank you for your feedback!")
     return redirect('class-detail', pk=pk, slug=slug)
 
+
 @login_required
 def my_classes(request):
     user = request.user
 
-    # Enrollments for the user
     enrollments = Enrollment.objects.filter(user=user).select_related('schedule', 'schedule__martial_arts_class')
 
-    # Separate upcoming and past schedules
     upcoming_classes = enrollments.filter(
         Q(schedule__date__gt=now().date()) |
         Q(schedule__date=now().date(), schedule__start_time__gt=now().time())
@@ -296,20 +303,16 @@ def my_classes(request):
         Q(schedule__date=now().date(), schedule__end_time__lt=now().time())
     )
 
-    # Handle cancellation if the form is submitted
     if request.method == "POST":
         enrollment_id = request.POST.get("enrollment_id")
         if enrollment_id:
-            # Get the enrollment object
             enrollment = get_object_or_404(Enrollment, pk=enrollment_id, user=user)
             enrollment.delete()
             messages.success(request, "Your enrollment has been successfully canceled.")
             return redirect('my-classes')  # Redirect to the same page after cancellation
 
-    # Render context
     context = {
         'upcoming_classes': upcoming_classes,
         'past_classes': past_classes,
     }
     return render(request, 'academy/user_classes.html', context)
-

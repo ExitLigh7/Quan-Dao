@@ -13,3 +13,4 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         if instance.is_superuser:
             instance.profile.role = 'admin'
             instance.profile.save()
+

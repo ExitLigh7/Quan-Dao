@@ -1,0 +1,20 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="container text-center my-5">
+        <!-- 404 Heading -->
+        <h1 class="display-3 text-danger">404</h1>
+        <h2 class="mb-4">Oops! Page not found.</h2>
+        <p class="mb-4">The page you are looking for does not exist or has been moved.</p>
+        
+        <!-- Image with responsive and margin classes from Bootstrap -->
+        <div class="d-flex justify-content-center mb-4">
+            <img src="{% static 'images/404_error_image.png' %}" 
+                 alt="404 error image related to martial arts" class="img-fluid" style="max-height: 400px;">
+        </div>
+
+        <!-- Go Back Button -->
+        <a href="{% url 'home' %}" class="btn btn-primary">Go Back to Home</a>
+    </div>
+{% endblock %}
