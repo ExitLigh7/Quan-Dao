@@ -56,7 +56,6 @@ class ScheduleUpdateView(LoginRequiredMixin, IsInstructorMixin, UpdateView):
     success_url = reverse_lazy('schedule-list')
 
     def get_queryset(self):
-        # Restrict updates to schedules owned by the instructor
         return Schedule.objects.filter(instructor=self.request.user)
 
     def form_valid(self, form):
@@ -65,15 +64,11 @@ class ScheduleUpdateView(LoginRequiredMixin, IsInstructorMixin, UpdateView):
 
 
 class ScheduleDeleteView(LoginRequiredMixin, IsInstructorMixin, DeleteView):
-    """
-    Allows instructors to delete their schedules.
-    """
     model = Schedule
     template_name = 'academy/schedule_confirm_delete.html'
     success_url = reverse_lazy('schedule-list')
 
     def get_queryset(self):
-        # Restrict deletion to schedules owned by the instructor
         return Schedule.objects.filter(instructor=self.request.user)
 
     def delete(self, request, *args, **kwargs):

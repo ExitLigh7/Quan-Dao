@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.timezone import make_aware, now
 from django.views import generic
 from django.views.decorators.http import require_POST
+from QuanDao_1.academy.mixins import IsInstructorMixin
 from QuanDao_1.academy.models import MartialArtsClass, Enrollment, Schedule, Feedback
 from QuanDao_1.accounts.models import Profile
 
@@ -121,7 +122,7 @@ class ClassDetailView(generic.DetailView):
         return context
 
 
-class ClassCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
+class ClassCreateView(LoginRequiredMixin, IsInstructorMixin, generic.CreateView):
     model = MartialArtsClass
     template_name = 'academy/class_form.html'
     fields = ['name', 'description', 'level', 'max_capacity']
@@ -140,7 +141,7 @@ class ClassCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateVie
         return reverse_lazy('classes-overview')
 
 
-class ClassUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class ClassUpdateView(LoginRequiredMixin, IsInstructorMixin, generic.UpdateView):
     model = MartialArtsClass
     template_name = 'academy/class_form.html'
     fields = ['name', 'description', 'level', 'max_capacity']
@@ -158,13 +159,12 @@ class ClassUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateVie
         return reverse_lazy('classes-overview')
 
 
-class ClassDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class ClassDeleteView(LoginRequiredMixin, IsInstructorMixin, generic.DeleteView):
     model = MartialArtsClass
     template_name = 'academy/class_confirm_delete.html'
     context_object_name = 'class'
 
     def test_func(self):
-        """Only allow the instructor or staff to delete the class"""
         martial_arts_class = self.get_object()
         return martial_arts_class.instructor == self.request.user
 

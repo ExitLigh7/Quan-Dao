@@ -59,7 +59,6 @@ class Profile(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Assign role as 'admin' if the associated user is a superuser
         if self.user.is_superuser:
             self.role = self.ADMIN
         super().save(*args, **kwargs)
@@ -71,5 +70,8 @@ class Profile(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def is_complete(self):
-        # Check if essential fields are completed
         return bool(self.first_name and self.last_name and self.date_of_birth)
+
+    def delete(self, *args, **kwargs):
+        self.user.delete()
+        super().delete(*args, **kwargs)
