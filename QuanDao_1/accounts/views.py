@@ -1,9 +1,7 @@
-from django.contrib import messages
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, UpdateView, DeleteView, CreateView
 from django.urls import reverse_lazy
@@ -15,9 +13,6 @@ UserModel = get_user_model()
 
 class UserLoginView(LoginView):
     template_name = 'accounts/login-page.html'
-
-    # def get_success_url(self):
-    #     return self.request.GET.get('next', '/')
 
 class UserRegisterView(CreateView):
     model = UserModel
@@ -61,47 +56,23 @@ class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             kwargs={'pk': self.object.pk},
         )
 
-from django.urls import reverse
 
 class ProfileDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Profile
+    template_name = 'accounts/profile-delete-page.html'
+    success_url = reverse_lazy('login')
 
     def test_func(self):
-        # Ensure the profile belongs to the currently logged-in user
-        profile = self.get_object()
+        profile = get_object_or_404(Profile, pk=self.kwargs['pk'])
         return self.request.user == profile.user
 
-    def get(self, request, *args, **kwargs):
-        # Override GET to prevent rendering a confirmation page
-        return HttpResponse(status=405)  # Method Not Allowed
-
     def delete(self, request, *args, **kwargs):
-        print(f"Delete method triggered for profile {kwargs.get('pk')}")
-
-        if request.method == 'POST':
-            # Log out the user
-            logout(request)
-
-            try:
-                # Fetch the profile and associated user
-                profile = self.get_object()
-                user = profile.user
-
-                # Delete the user (Profile is deleted due to CASCADE)
-                print(f"Deleting user: {user.username}")
-                user.delete()
-
-                # Success message
-                messages.success(request, "Your profile and account have been deleted successfully.")
-            except Exception as e:
-                print(f"Error: {e}")
-                messages.error(request, "An error occurred while deleting your profile.")
-
-        return redirect(self.get_success_url())
-
-    def get_success_url(self):
-        # Example: Redirecting to a user-specific page, or a static URL
-        return reverse('home')
+        self.object = self.get_object()
+        # Log out the user using the request object
+        logout(request)
+        # Delete the associated AppUser (which cascades to the profile)
+        self.object.user.delete()
+        return redirect(self.success_url)
 
 
 
