@@ -100,7 +100,7 @@
                             const listItem = document.createElement('li');
                             listItem.classList.add('dropdown-item');
                             listItem.style.cursor = 'pointer';
-                            listItem.innerHTML = `<a href="/class/${result.id}/" class="d-block text-truncate">${highlightQuery(result.name, query)}</a>`;
+                            listItem.innerHTML = `<a href="/class/${result.id}/${result.slug}" class="d-block text-truncate">${highlightQuery(result.name, query)}</a>`;
                             searchResults.appendChild(listItem);
                         });
                     } else {
@@ -119,7 +119,7 @@
                 searchResults.style.display = 'none';
             }
         });
-        
+
         function highlightQuery(text, query) {
             const regex = new RegExp(`(${query})`, 'gi');
             return text.replace(regex, '<span class="text-primary fw-bold">$1</span>');

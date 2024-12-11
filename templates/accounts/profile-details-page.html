@@ -6,37 +6,43 @@
         <h1 class="text-center">Profile</h1>
         <div class="card mx-auto mt-4" style="max-width: 600px;">
             <div class="card-body">
-                {% if profile.profile_picture %}
-                    <div class="text-center mb-3">
+                <!-- Profile Picture -->
+                <div class="text-center mb-3">
+                    {% if profile.profile_picture %}
                         <img src="{{ profile.profile_picture.url }}"
                              alt="Profile Picture"
                              class="rounded-circle"
                              style="width: 150px; height: 150px; object-fit: cover;">
-                    </div>
-                {% else %}
-                    <div class="text-center mb-3">
+                    {% else %}
                         <img src="{% static 'images/default-profile.png' %}"
                              alt="Default"
                              class="rounded-circle img-thumbnail"
                              style="width: 100px; height: 100px;">
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Profile Information -->
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>Username:</strong> {{ profile.user.username }}</li>
-                    <li class="list-group-item"><strong>First Name:</strong> {{ profile.first_name }}</li>
-                    <li class="list-group-item"><strong>Last Name:</strong> {{ profile.last_name }}</li>
+                    <li class="list-group-item"><strong>Full Name:</strong> {{ profile.get_full_name }}</li>
+                    <li class="list-group-item"><strong>Role:</strong> {{ profile.get_role_display }}</li>
                     <li class="list-group-item"><strong>Date of Birth:</strong> {{ profile.date_of_birth }}</li>
+
                     {% if profile.biography %}
-                    <li class="list-group-item"><strong>Bio:</strong> {{ profile.biography }}</li>
+                        <li class="list-group-item"><strong>Biography:</strong> {{ profile.biography }}</li>
                     {% endif %}
                 </ul>
+
+                <!-- Profile Edit and Actions -->
                 <div class="text-center mt-4">
                     <a href="{% url 'profile-edit' pk=profile.pk %}" class="btn btn-primary">Edit Profile</a>
 
-                    <!-- New Button for My Classes -->
-                    <a href="{% url 'my-classes'%}" class="btn btn-success">My Classes</a>
+                    <!-- Button for 'My Classes' -->
+                    {% if profile.role == 'student' %}
+                        <a href="{% url 'my-classes' %}" class="btn btn-success">My Classes</a>
+                    {% endif %}
 
-                    <!-- Delete Profile Button -->
+                    <!-- Profile Deletion -->
                     <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteProfileModal">
                         Delete Profile
                     </button>
@@ -46,8 +52,7 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteProfileModal" tabindex="-1"
-         aria-labelledby="deleteProfileModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteProfileModal" tabindex="-1" aria-labelledby="deleteProfileModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -67,4 +72,5 @@
             </div>
         </div>
     </div>
+
 {% endblock %}

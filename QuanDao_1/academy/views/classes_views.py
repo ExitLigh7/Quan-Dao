@@ -1,6 +1,6 @@
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError
@@ -75,7 +75,6 @@ class ClassDetailView(generic.DetailView):
         # Default values for unauthenticated users
         context['is_enrolled'] = False
         context['enrolled_schedules'] = []
-        context['schedules_for_feedback_ids'] = []
         context['feedbacks'] = Feedback.objects.filter(class_instance=self.object)
 
         if user.is_authenticated:
@@ -90,6 +89,7 @@ class ClassDetailView(generic.DetailView):
                 martial_arts_class=self.object
             ).values_list('schedule', flat=True)
 
+            # Determine if the user is enrolled in all schedules
             context['is_enrolled'] = len(enrolled_schedules) == schedules.count()
             context['enrolled_schedules'] = enrolled_schedules
 
@@ -107,6 +107,7 @@ class ClassDetailView(generic.DetailView):
             )
             context['schedules_for_feedback_ids'] = schedules_for_feedback.values_list('id', flat=True)
 
+        # Check if all schedules are future schedules
         future_schedules = schedules.filter(
             Q(date__gt=now().date()) |
             Q(date=now().date(), start_time__gt=now().time())
@@ -171,7 +172,6 @@ class ClassDeleteView(LoginRequiredMixin, IsInstructorMixin, generic.DeleteView)
     def get_success_url(self):
         messages.success(self.request, "Class successfully deleted.")
         return reverse_lazy('classes-overview')
-
 
 
 @login_required

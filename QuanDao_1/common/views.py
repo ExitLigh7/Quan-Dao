@@ -12,9 +12,10 @@ def search(request):
     results = []
 
     if query:
-        results = MartialArtsClass.objects.filter(name__icontains=query).values('id', 'name', 'description')
+        results = MartialArtsClass.objects.filter(name__icontains=query).values('id', 'slug', 'name', 'description')
 
     return JsonResponse({'query': query, 'results': list(results)})
+
 
 
 
