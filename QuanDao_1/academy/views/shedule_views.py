@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from ..mixins import IsInstructorMixin
-from ..models import Schedule, MartialArtsClass
+from ..models import Schedule, MartialArtsClass, Enrollment
 from ..forms import ScheduleCreateForm, ScheduleEditForm
 
 
@@ -31,7 +31,6 @@ class ScheduleListView(LoginRequiredMixin, IsInstructorMixin, ListView):
 
 
 class ScheduleCreateView(LoginRequiredMixin, IsInstructorMixin, CreateView):
-
     model = Schedule
     form_class = ScheduleCreateForm
     template_name = 'academy/schedule_form.html'
@@ -49,7 +48,6 @@ class ScheduleCreateView(LoginRequiredMixin, IsInstructorMixin, CreateView):
 
 
 class ScheduleUpdateView(LoginRequiredMixin, IsInstructorMixin, UpdateView):
-
     model = Schedule
     form_class = ScheduleEditForm
     template_name = 'academy/schedule_form.html'
@@ -62,16 +60,32 @@ class ScheduleUpdateView(LoginRequiredMixin, IsInstructorMixin, UpdateView):
         messages.success(self.request, "Schedule updated successfully!")
         return super().form_valid(form)
 
-
 class ScheduleDeleteView(LoginRequiredMixin, IsInstructorMixin, DeleteView):
     model = Schedule
     template_name = 'academy/schedule_confirm_delete.html'
     success_url = reverse_lazy('schedule-list')
 
     def get_queryset(self):
+        # Only allow instructors to delete their own schedules
         return Schedule.objects.filter(instructor=self.request.user)
 
     def delete(self, request, *args, **kwargs):
         schedule = self.get_object()
-        messages.success(request, f"Schedule for {schedule.martial_arts_class.name} on {schedule.date} deleted.")
+
+        # Fetch all enrollments related to this schedule
+        enrollments_to_delete = Enrollment.objects.filter(schedule=schedule)
+
+        if enrollments_to_delete.exists():
+            # Deleting all enrollments related to this schedule
+            enrollments_to_delete.delete()
+
+            messages.success(request,
+                             f"Schedule for {schedule.martial_arts_class.name} on {schedule.date} has been deleted, "
+                             f"and the related enrollments have been removed."
+                             )
+        else:
+            messages.warning(request, "No enrollments found for this schedule.")
+
+        # Proceed with the actual deletion of the schedule
         return super().delete(request, *args, **kwargs)
+

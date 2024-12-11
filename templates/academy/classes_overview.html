@@ -3,10 +3,12 @@
 
 {% block content %}
     <div class="container my-5">
-        <!-- Add Class Button for Instructors and Staff -->
+        <!-- Add Class and Add Schedule Buttons for Instructors and Staff -->
         {% if can_add_class %}
             <div class="text-end my-3">
                 <a href="{% url 'class-add' %}" class="btn btn-primary">Add Class</a>
+                <!-- Add Schedules Button for Instructors -->
+                <a href="{% url 'schedule-list' %}" class="btn btn-secondary ms-3">Schedules</a>
             </div>
         {% endif %}
 
